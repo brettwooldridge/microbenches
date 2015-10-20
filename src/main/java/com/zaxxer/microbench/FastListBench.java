@@ -54,7 +54,7 @@ import org.openjdk.jmh.annotations.Warmup;
 //@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
 @Warmup(iterations=6, batchSize=10_000)
-@Measurement(iterations=8, batchSize=100_000)
+@Measurement(iterations=20, batchSize=100_000)
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class FastListBench
