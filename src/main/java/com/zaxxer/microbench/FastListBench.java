@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
@@ -47,12 +46,17 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-@State(Scope.Thread)
-@Fork(value = 3)
-@Warmup(iterations = 3)
-@Measurement(iterations = 6)
-@BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+//@State(Scope.Thread)
+//@Fork(value = 3)
+//@Warmup(iterations = 3)
+//@Measurement(iterations = 6)
+//@BenchmarkMode(Mode.Throughput)
+//@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
+@Warmup(iterations=6, batchSize=10_000)
+@Measurement(iterations=8, batchSize=100_000)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class FastListBench
 {
    @Param({ "base", "new", "orig" })
@@ -61,56 +65,17 @@ public class FastListBench
    @Param({ "32" })
    private int initCapacity = 32;
    
-   private String[] strings;
    private ArrayList<String> fastList;
 
    @Benchmark
    public boolean testList()
    {
-      boolean b = true;
-      b &= fastList.add(strings[0]);
-      b &= fastList.add(strings[1]);
-      b &= fastList.add(strings[2]);
-      b &= fastList.add(strings[3]);
-      b &= fastList.add(strings[4]);
-      b &= fastList.add(strings[5]);
-      b &= fastList.add(strings[6]);
-      b &= fastList.add(strings[7]);
-      b &= fastList.add(strings[8]);
-      b &= fastList.add(strings[9]);
-      b &= fastList.add(strings[10]);
-      b &= fastList.add(strings[11]);
-      b &= fastList.add(strings[12]);
-      b &= fastList.add(strings[13]);
-      b &= fastList.add(strings[14]);
-
-      b &= fastList.remove(strings[14]);
-      b &= fastList.remove(strings[13]);
-      b &= fastList.remove(strings[12]);
-      b &= fastList.remove(strings[11]);
-      b &= fastList.remove(strings[10]);
-      b &= fastList.remove(strings[9]);
-      b &= fastList.remove(strings[8]);
-      b &= fastList.remove(strings[7]);
-      b &= fastList.remove(strings[6]);
-      b &= fastList.remove(strings[5]);
-      b &= fastList.remove(strings[4]);
-      b &= fastList.remove(strings[3]);
-      b &= fastList.remove(strings[2]);
-      b &= fastList.remove(strings[1]);
-      b &= fastList.remove(strings[0]);
-
-      return b;
+      return fastList.add(listImpl);
    }
-
+   
    @Setup(Level.Trial)
-   public void setup()
+   public void trialSetup()
    {
-      this.strings = new String[31];
-      for (int i = 0; i < strings.length; i++) {
-         strings[i] = String.valueOf(i);
-      }
-
       switch (listImpl) {
       case "base":
          this.fastList = new ArrayList<>(initCapacity);
@@ -122,5 +87,11 @@ public class FastListBench
          this.fastList = new FastList2<>(String.class, initCapacity);
          break;
       }
+   }
+
+   @Setup(Level.Iteration)
+   public void iterationSetup()
+   {
+      fastList.clear();
    }
 }
